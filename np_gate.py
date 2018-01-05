@@ -4,22 +4,6 @@ import numpy as np
 
 from _gate_common import *
 
-class _gate:
-    __sqrt2_inv = math.sqrt(2.0) / 2.0
-    h = np.array([[1, 1], [1, -1]], dtype=float) * __sqrt2_inv
-    i = np.array([[1, 0], [0, 1]], dtype=float)
-    x = np.array([[0, 1], [1, 0]], dtype=float)
-    y = np.array([[0, -1j], [1j, 0]], dtype=complex)
-    z = np.array([[1, 0], [0, -1]], dtype=float)
-    s = np.array([[1, 0], [0, 1j]], dtype=complex)
-    t = np.array([[1, 0], [0, complex(__sqrt2_inv, __sqrt2_inv)]], dtype=complex)
-    s_dag = np.array([[1, 0], [0, -1j]], dtype=complex)
-    t_dag = np.array([[1, 0], [0, complex(__sqrt2_inv, -__sqrt2_inv)]], dtype=complex)
-    # _zero and _one are not unitary. It is used for Control-U gate.
-    _zero = np.array([[1, 0], [0, 0]], dtype=float)
-    _one = np.array([[0, 0], [0, 1]], dtype=float)
-
-
 class NumPyGateOperation(GateOperation):
     _gate = build_gate_class('NumPyGate', np.array, math.sqrt(2.0) / 2.0, complex)
     _identity = staticmethod(np.identity)

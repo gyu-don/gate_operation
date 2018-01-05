@@ -6,35 +6,6 @@ from sympy.physics.quantum import TensorProduct
 
 from _gate_common import *
 
-class _gate:
-    __sqrt2_inv = 1 / sympy.sqrt(2)
-    h = sympy.Matrix([[1, 1], [1, -1]]) * __sqrt2_inv
-    i = sympy.Matrix([[1, 0], [0, 1]])
-    x = sympy.Matrix([[0, 1], [1, 0]])
-    y = sympy.Matrix([[0, -1j], [1j, 0]])
-    z = sympy.Matrix([[1, 0], [0, -1]])
-    s = sympy.Matrix([[1, 0], [0, 1j]])
-    t = sympy.Matrix([[1, 0], [0, __sqrt2_inv + __sqrt2_inv * sympy.I]])
-    s_dag = s.adjoint()
-    t_dag = t.adjoint()
-    # _zero and _one are not unitary but _zero + _one is identity. It is used for Control-U gate.
-    _zero = sympy.Matrix([[1, 0], [0, 0]])
-    _one = sympy.Matrix([[0, 0], [0, 1]])
-
-
-class FakeRandom:
-    def __init__(self, random_sequence, cycle=False):
-        if cycle:
-            self.seq = itertools.cycle(iter(random_sequence))
-        else:
-            self.seq = iter(random_sequence)
-
-    def random(self):
-        try:
-            return next(self.seq)
-        except StopIteration:
-            raise ValueError('Given random sequence is over.')
-
 
 class SymPyGateOperation(GateOperation):
     def __init__(self, n_bits, data, rng=None):
