@@ -42,6 +42,12 @@ class GateOperation:
         mat1 = self._matmul(mat1, mat2)
 
     def __init__(self, n_bits, data, rng=None):
+        '''Initialize self.
+        Args:
+            n_bits (int): The number of bits.
+            data:         The matrix.
+            rng:          The random number generator.
+        '''
         self.n_bits = n_bits
         self.data = data
         if rng:
@@ -191,6 +197,90 @@ class GateOperation:
         mat += self._identity(2**self.n_bits) - matc
         self.data = self._matmul(mat, self.data)
         return self
+
+    def tensorproduct(self, other, rng=None):
+        return type(self)(self.n_bits + other.n_bits, self._kron(self.data, other.data), rng)
+
+
+class IQubitOperation:
+    @staticmethod
+    def _zeros(n):
+        raise NotImplemented
+
+    @staticmethod
+    def _abssq(val):
+        raise NotImplemented
+
+    @staticmethod
+    def _sqrt(val):
+        raise NotImplemented
+
+    def _del_idx(self, i):
+        raise NotImplemented
+
+    @classmethod
+    def _generate_data(cls, n_bits):
+        data = cls._zeros(2**n_bits)
+        data[0, 0] = 1
+        return data
+
+    def _measure_bit(self, i):
+        abssq = self._abssq
+        bi = self._bit_indices
+        normsq = 0
+        d = self.data
+        for j in bi(i, 0):
+            normsq += abssq(d[j])
+        r = self.rng.random()
+        if r < normsq:
+            norm = self._sqrt(normsq)
+            for j in bi(i, 0):
+                d[j] /= norm
+            for j in bi(i, 1):
+                d[j] = 0
+            return 0
+        else:
+            norm = self._sqrt(1 - normsq)
+            for j in bi(i, 1):
+                d[j] /= norm
+            for j in bi(i, 0):
+                d[j] = 0
+            return 1
+
+    def measure(self, i):
+        b = self._measure_bit(i)
+        j = self.n_bits - i - 1
+        self.measured = (self.measured ^ (0 << j)) | (1 << j)
+        return self
+
+    m = measure
+
+    def append_qubit(self, n):
+        self.data = self._kron(self.data, self._generate_data(n))
+        self.n_bits += n
+        self.measured <<= n
+        return self
+
+    def merge_qubit(self, other):
+        self.data = self._kron(self.data, other.data)
+        self.n_bits += other.n_bits
+        self.measured = (self.measured << other.n_bits) | other.measured
+        return self
+
+    def drop_qubit(self, i):
+        data = self.data
+        del_idx = self._del_idx
+        b = self._measure_bit(i)
+        if b == 1:
+            b = 0
+        else:
+            b = 1
+        indices = list(self._bit_indices(i, b))
+        indices.sort(reverse=True)
+        for j in indices:
+            del_idx(j)
+        return self
+
 
 def build_gate_class(name, f_matrix, sqrt2_inv, make_complex):
     d = {}

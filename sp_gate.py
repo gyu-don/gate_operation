@@ -28,13 +28,24 @@ class SymPyGateOperation(GateOperation):
             self.rng = random.Random()
 
 
-class Qubit(SymPyGateOperation):
+class Qubit(SymPyGateOperation, IQubitOperation):
+    @staticmethod
+    def _zeros(n):
+        return sympy.zeros(n, 1)
+
+    @staticmethod
+    def _abssq(v):
+        return v.conjugate() * v
+
+    _sqrt = staticmethod(sympy.sqrt)
+
+    def _del_idx(self, i):
+        self.data.row_del(i)
+
     def __init__(self, n_bits, arr=None, measured=0, rng=None):
-        self.n_bits = n_bits
         self.measured = measured
         if arr is None:
-            data = sympy.zeros(2**n_bits, 1)
-            data[0, 0] = 1
+            data = self._generate_data(n_bits)
         else:
             if arr.shape == (2**n_bits, 1):
                 data = arr
@@ -55,31 +66,6 @@ class Qubit(SymPyGateOperation):
 
         fmtc = '{:0%db}' % self.n_bits
         return ' + '.join(qubit_format(i) for i in range(2**self.n_bits) if abs(self.data[i]) > 0.00001) + ' Measured: ' + fmtc.format(self.measured)
-
-    def measure(self, i):
-        normsq = 0
-        d = self.data
-        for j in self._bit_indices(i, 0):
-            normsq += d[j].conjugate() * d[j]
-        r = self.rng.random()
-        if r < normsq:
-            norm = sympy.sqrt(normsq)
-            for j in self._bit_indices(i, 0):
-                self.data[j] /= norm
-            for j in self._bit_indices(i, 1):
-                self.data[j] = 0
-            self.measured ^= self.measured & (1 << (self.n_bits - i - 1))
-            return self
-        else:
-            norm = sympy.sqrt(1 - normsq)
-            for j in self._bit_indices(i, 1):
-                self.data[j] /= norm
-            for j in self._bit_indices(i, 0):
-                self.data[j] = 0
-            self.measured |= 1 << (self.n_bits - i - 1)
-            return self
-
-    m = measure
 
 
 class Unitary(SymPyGateOperation):

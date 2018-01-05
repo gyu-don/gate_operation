@@ -14,13 +14,24 @@ class NumPyGateOperation(GateOperation):
         GateOperation.__init__(self, n_bits, data, rng)
 
 
-class Qubit(NumPyGateOperation):
+class Qubit(NumPyGateOperation, IQubitOperation):
+    @staticmethod
+    def _zeros(n):
+        return np.zeros((n, 1), dtype=complex)
+
+    @staticmethod
+    def _abssq(v):
+        return np.abs(v)**2
+
+    _sqrt = staticmethod(math.sqrt)
+
+    def _del_idx(self, i):
+        self.data = np.delete(self.data, i, 0)
+
     def __init__(self, n_bits, arr=None, measured=0, rng=None):
-        self.n_bits = n_bits
         self.measured = measured
         if arr is None:
-            data = np.zeros((2**n_bits, 1), dtype=complex)
-            data[0, 0] = 1
+            data = self._generate_data(n_bits)
         else:
             if arr.shape == (2**n_bits, 1):
                 data = arr
@@ -35,31 +46,6 @@ class Qubit(NumPyGateOperation):
         fmt = '{}|{:0%db}>' % self.n_bits
         fmtc = '{:0%db}' % self.n_bits
         return ' + '.join(fmt.format(self.data[i], i) for i in range(2**self.n_bits) if abs(self.data[i]) > 0.00001) + ' Measured: ' + fmtc.format(self.measured)
-
-    def measure(self, i):
-        normsq = 0
-        d = self.data
-        for j in self._bit_indices(i, 0):
-            normsq += np.abs(d[j])**2
-        r = self.rng.random()
-        if r < normsq:
-            norm = math.sqrt(normsq)
-            for j in self._bit_indices(i, 0):
-                self.data[j] /= norm
-            for j in self._bit_indices(i, 1):
-                self.data[j] = 0
-            self.measured ^= self.measured & (1 << (self.n_bits - i - 1))
-            return self
-        else:
-            norm = math.sqrt(1 - normsq)
-            for j in self._bit_indices(i, 1):
-                self.data[j] /= norm
-            for j in self._bit_indices(i, 0):
-                self.data[j] = 0
-            self.measured |= 1 << (self.n_bits - i - 1)
-            return self
-
-    m = measure
 
 
 class Unitary(NumPyGateOperation):
