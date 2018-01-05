@@ -34,7 +34,7 @@ class FakeRandom(random.Random):
             raise ValueError('Given random sequence is over.')
 
 
-class IGateOperation:
+class NumPyGateOperation:
     def __init__(self, n_bits, data, rng=None):
         self.n_bits = n_bits
         self.data = data
@@ -170,7 +170,7 @@ class IGateOperation:
     ccx = ccnot
 
 
-class Qubit(IGateOperation):
+class Qubit(NumPyGateOperation):
     def __init__(self, n_bits, arr=None, measured=0, rng=None):
         self.n_bits = n_bits
         self.measured = measured
@@ -182,7 +182,7 @@ class Qubit(IGateOperation):
                 data = arr
             else:
                 raise ValueError('Unexpected length of array is given.')
-        IGateOperation.__init__(self, n_bits, data, rng)
+        NumPyGateOperation.__init__(self, n_bits, data, rng)
 
     def __repr__(self):
         return 'Qubit(' + str(self.n_bits) + ', arr=\n' + str(self.data) + ', measured=' + bin(self.measured) + ')'
@@ -229,7 +229,7 @@ class Qubit(IGateOperation):
     m = measure
 
 
-class Unitary(IGateOperation):
+class Unitary(NumPyGateOperation):
     def __init__(self, n_bits, arr=None, rng=None):
         self.n_bits = n_bits
         if arr is None:
@@ -240,7 +240,7 @@ class Unitary(IGateOperation):
                 data = arr
             else:
                 raise ValueError('Unexpected length of array is given.')
-        IGateOperation.__init__(self, n_bits, data, rng)
+        NumPyGateOperation.__init__(self, n_bits, data, rng)
 
     def __repr__(self):
         return 'Unitary(' + str(self.n_bits) + ', arr=\n' + str(self.data) + ')'
