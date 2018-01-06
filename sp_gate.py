@@ -20,7 +20,7 @@ class SymPyGateOperation(IGateOperation):
         mat1 = mat1.multiply_elementwise(mat2)
 
     def __init__(self, n_bits, data):
-        IGateOperation.__init__(self.n_bits, self.data)
+        IGateOperation.__init__(self, n_bits, data)
 
 
 class Qubit(SymPyGateOperation, IQubitOperation):
