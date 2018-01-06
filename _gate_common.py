@@ -224,7 +224,7 @@ class IQubitOperation:
 
     def __init__(self, measured=None, rng=None):
         if rng is None:
-            self.rng = random.Random()
+            rng = random.Random()
         self.rng = rng
         if measured is None:
             measured = 0
