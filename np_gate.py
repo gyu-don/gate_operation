@@ -3,15 +3,15 @@ import numpy as np
 
 from _gate_common import *
 
-class NumPyGateOperation(GateOperation):
+class NumPyGateOperation(IGateOperation):
     _gate = build_gate_class('NumPyGate', np.array, math.sqrt(2.0) / 2.0, complex)
     _identity = staticmethod(np.identity)
     _kron = staticmethod(np.kron)
     _matmul = staticmethod(np.dot)
     _inplace_multiply = staticmethod(np.ndarray.__imul__)
 
-    def __init__(self, n_bits, data, rng=None):
-        GateOperation.__init__(self, n_bits, data, rng)
+    def __init__(self, n_bits, data):
+        IGateOperation.__init__(self, n_bits, data)
 
 
 class Qubit(NumPyGateOperation, IQubitOperation):
@@ -28,8 +28,7 @@ class Qubit(NumPyGateOperation, IQubitOperation):
     def _del_idx(self, i):
         self.data = np.delete(self.data, i, 0)
 
-    def __init__(self, n_bits, arr=None, measured=0, rng=None):
-        self.measured = measured
+    def __init__(self, n_bits, arr=None, measured=None, rng=None):
         if arr is None:
             data = self._generate_data(n_bits)
         else:
@@ -37,7 +36,8 @@ class Qubit(NumPyGateOperation, IQubitOperation):
                 data = arr
             else:
                 raise ValueError('Unexpected length of array is given.')
-        NumPyGateOperation.__init__(self, n_bits, data, rng)
+        NumPyGateOperation.__init__(self, n_bits, data)
+        IQubitOperation.__init__(self, measured, rng)
 
     def __repr__(self):
         return 'Qubit(' + str(self.n_bits) + ', arr=\n' + str(self.data) + ', measured=' + bin(self.measured) + ')'
@@ -50,7 +50,6 @@ class Qubit(NumPyGateOperation, IQubitOperation):
 
 class Unitary(NumPyGateOperation):
     def __init__(self, n_bits, arr=None, rng=None):
-        self.n_bits = n_bits
         if arr is None:
             data = np.identity(2**n_bits, dtype=complex)
             data[0, 0] = 1

@@ -4,7 +4,7 @@ from sympy.physics.quantum import TensorProduct
 
 from _gate_common import *
 
-class SymPyGateOperation(GateOperation):
+class SymPyGateOperation(IGateOperation):
     _gate = build_gate_class(
             'SymPyGate',
             sympy.Matrix,
@@ -19,13 +19,8 @@ class SymPyGateOperation(GateOperation):
     def _inplace_multiply(mat1, mat2):
         mat1 = mat1.multiply_elementwise(mat2)
 
-    def __init__(self, n_bits, data, rng=None):
-        self.n_bits = n_bits
-        self.data = data
-        if rng:
-            self.rng = rng
-        else:
-            self.rng = random.Random()
+    def __init__(self, n_bits, data):
+        IGateOperation.__init__(self.n_bits, self.data)
 
 
 class Qubit(SymPyGateOperation, IQubitOperation):
@@ -42,7 +37,7 @@ class Qubit(SymPyGateOperation, IQubitOperation):
     def _del_idx(self, i):
         self.data.row_del(i)
 
-    def __init__(self, n_bits, arr=None, measured=0, rng=None):
+    def __init__(self, n_bits, arr=None, measured=None, rng=None):
         self.measured = measured
         if arr is None:
             data = self._generate_data(n_bits)
@@ -51,7 +46,8 @@ class Qubit(SymPyGateOperation, IQubitOperation):
                 data = arr
             else:
                 raise ValueError('Unexpected length of array is given.')
-        SymPyGateOperation.__init__(self, n_bits, data, rng)
+        SymPyGateOperation.__init__(self, n_bits, data)
+        IQubitOperation.__init__(self, measured, rng)
 
     def __repr__(self):
         return 'Qubit(' + str(self.n_bits) + ', arr=\n' + str(self.data) + ', measured=' + bin(self.measured) + ')'
@@ -69,7 +65,7 @@ class Qubit(SymPyGateOperation, IQubitOperation):
 
 
 class Unitary(SymPyGateOperation):
-    def __init__(self, n_bits, arr=None, rng=None):
+    def __init__(self, n_bits, arr=None):
         self.n_bits = n_bits
         if arr is None:
             data = sympy.eye(2**n_bits)
@@ -79,7 +75,7 @@ class Unitary(SymPyGateOperation):
                 data = arr
             else:
                 raise ValueError('Unexpected length of array is given.')
-        SymPyGateOperation.__init__(self, n_bits, data, rng)
+        SymPyGateOperation.__init__(self, n_bits, data)
 
     def __repr__(self):
         return 'Unitary(' + str(self.n_bits) + ', arr=' + repr(self.data) + ')'

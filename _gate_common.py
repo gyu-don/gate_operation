@@ -14,7 +14,7 @@ class FakeRandom:
         except StopIteration:
             raise ValueError('Given random sequence is over.')
 
-class GateOperation:
+class IGateOperation:
     # Shall be set by subclass.
     _gate = None
 
@@ -41,19 +41,14 @@ class GateOperation:
         'Do an inplace matmul operation, `mat1 = matmul(mat1, mat2)`.'
         mat1 = self._matmul(mat1, mat2)
 
-    def __init__(self, n_bits, data, rng=None):
+    def __init__(self, n_bits, data):
         '''Initialize self.
         Args:
             n_bits (int): The number of bits.
             data:         The matrix.
-            rng:          The random number generator.
         '''
         self.n_bits = n_bits
         self.data = data
-        if rng:
-            self.rng = rng
-        else:
-            self.rng = random.Random()
 
     # Gates
     def u(self, gate_operation):
@@ -198,8 +193,11 @@ class GateOperation:
         self.data = self._matmul(mat, self.data)
         return self
 
-    def tensorproduct(self, other, rng=None):
-        return type(self)(self.n_bits + other.n_bits, self._kron(self.data, other.data), rng)
+    def tensorproduct(self, other, *args, **kwargs):
+        return type(self)(self.n_bits + other.n_bits, self._kron(self.data, other.data), *args, **kwargs)
+
+    def clone(self, *args, **kwargs):
+        return type(self)(self.n_bits, self.data.copy(), *args, **kwargs)
 
 
 class IQubitOperation:
@@ -223,6 +221,14 @@ class IQubitOperation:
         data = cls._zeros(2**n_bits)
         data[0, 0] = 1
         return data
+
+    def __init__(self, measured=None, rng=None):
+        if rng is None:
+            self.rng = random.Random()
+        self.rng = rng
+        if measured is None:
+            measured = 0
+        self.measured = measured
 
     def _measure_bit(self, i):
         abssq = self._abssq
@@ -279,6 +285,7 @@ class IQubitOperation:
         indices.sort(reverse=True)
         for j in indices:
             del_idx(j)
+        self.n_bits -= 1
         return self
 
 
