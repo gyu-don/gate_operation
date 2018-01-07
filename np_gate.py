@@ -9,6 +9,7 @@ class NumPyGateOperation(IGateOperation):
     _kron = staticmethod(np.kron)
     _matmul = staticmethod(np.dot)
     _inplace_multiply = staticmethod(np.ndarray.__imul__)
+    _multiply = staticmethod(np.multiply)
 
     def __init__(self, n_bits, data):
         IGateOperation.__init__(self, n_bits, data)
@@ -22,6 +23,10 @@ class Qubit(NumPyGateOperation, IQubitOperation):
     @staticmethod
     def _abssq(v):
         return np.abs(v)**2
+
+    @staticmethod
+    def _innerproduct(v1, v2):
+        return np.sum(v1.conj() * v2)
 
     _sqrt = staticmethod(math.sqrt)
 
@@ -58,7 +63,7 @@ class Unitary(NumPyGateOperation):
                 data = arr
             else:
                 raise ValueError('Unexpected length of array is given.')
-        NumPyGateOperation.__init__(self, n_bits, data, rng)
+        NumPyGateOperation.__init__(self, n_bits, data)
 
     def __repr__(self):
         return 'Unitary(' + str(self.n_bits) + ', arr=\n' + str(self.data) + ')'

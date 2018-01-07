@@ -16,8 +16,8 @@ class SymPyGateOperation(IGateOperation):
     _matmul = staticmethod(sympy.Matrix.multiply)
 
     @staticmethod
-    def _inplace_multiply(mat1, mat2):
-        mat1 = mat1.multiply_elementwise(mat2)
+    def _multiply(mat1, mat2):
+        return mat1.multiply_elementwise(mat2)
 
     def __init__(self, n_bits, data):
         IGateOperation.__init__(self, n_bits, data)
@@ -31,6 +31,10 @@ class Qubit(SymPyGateOperation, IQubitOperation):
     @staticmethod
     def _abssq(v):
         return v.conjugate() * v
+
+    @staticmethod
+    def _innerproduct(v1, v2):
+        return (v1.H * v2)[0, 0]
 
     _sqrt = staticmethod(sympy.sqrt)
 

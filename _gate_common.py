@@ -22,24 +22,30 @@ class IGateOperation:
     def _identity(n):
         'Returns an identity matrix of n rows and n colums.'
         # Shall be overrided by subclass.
-        raise NotImplemented
+        raise NotImplementedError
 
     @staticmethod
     def _kron(cls, mat1, mat2):
         'Returns a Kronecker product of mat1 and mat2.'
         # Shall be overrided by subclass.
-        raise NotImplemented
+        raise NotImplementedError
 
     @staticmethod
     def _matmul(cls, mat1, mat2):
         'Returns a matrix product of mat1 and mat2'
         # Shall be overrided by subclass.
-        raise NotImplemented
+        raise NotImplementedError
 
     @staticmethod
-    def _inplace_matmul(cls, mat1, mat2):
-        'Do an inplace matmul operation, `mat1 = matmul(mat1, mat2)`.'
-        mat1 = self._matmul(mat1, mat2)
+    def _inplace_multiply(mat1, mat2):
+        'Do an inplace element-wise multiply operation.'
+        raise NotImplementedError
+
+    @staticmethod
+    def _multiply(mat1, mat2):
+        'Do an element-wise multiply operation.'
+        # Shall be overrided by subclass.
+        raise NotImplementedError
 
     def __init__(self, n_bits, data):
         '''Initialize self.
@@ -129,7 +135,11 @@ class IGateOperation:
         if c1 == c2:
             return self.cu(c1, gate_operation)
         matc = self._make_single_gate_mat(_gate._one, c1)
-        self._inplace_multiply(matc, self._make_single_gate_mat(_gate._one, c2))
+        matc2 = self._make_single_gate_mat(_gate._one, c2)
+        try:
+            self._inplace_multiply(matc, matc2)
+        except NotImplementedError:
+            matc = self._multiply(matc, matc2)
         mat = self._matmul(gate_operation.data, matc)
         mat += self._identity(2**self.n_bits) - matc
         self.data = self._matmul(mat, self.data)
@@ -187,7 +197,11 @@ class IGateOperation:
             return self.apply_cgate(gate, c1, i)
         mat = self._make_single_gate_mat(gate, i)
         matc = self._make_single_gate_mat(_gate._one, c1)
-        self._inplace_multiply(matc, self._make_single_gate_mat(_gate._one, c2))
+        matc2 = self._make_single_gate_mat(_gate._one, c2)
+        try:
+            self._inplace_multiply(matc, matc2)
+        except NotImplementedError:
+            matc = self._multiply(matc, matc2)
         mat = self._matmul(mat, matc)
         mat += self._identity(2**self.n_bits) - matc
         self.data = self._matmul(mat, self.data)
@@ -203,24 +217,28 @@ class IGateOperation:
 class IQubitOperation:
     @staticmethod
     def _zeros(n):
-        raise NotImplemented
+        raise NotImplementedError
 
     @staticmethod
     def _abssq(val):
-        raise NotImplemented
+        raise NotImplementedError
 
     @staticmethod
     def _sqrt(val):
-        raise NotImplemented
+        raise NotImplementedError
 
-    def _del_idx(self, i):
-        raise NotImplemented
+    @staticmethod
+    def _innerproduct(vec1, vec2):
+        raise NotImplementedError
 
     @classmethod
     def _generate_data(cls, n_bits):
         data = cls._zeros(2**n_bits)
         data[0, 0] = 1
         return data
+
+    def _del_idx(self, i):
+        raise NotImplementedError
 
     def __init__(self, measured=None, rng=None):
         if rng is None:
@@ -287,6 +305,10 @@ class IQubitOperation:
             del_idx(j)
         self.n_bits -= 1
         return self
+
+    def fidelity(self, other):
+        v = self._innerproduct(self.data, other.data)
+        return abs(v)
 
 
 def build_gate_class(name, f_matrix, sqrt2_inv, make_complex):
