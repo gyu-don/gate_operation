@@ -19,6 +19,7 @@ circuit = alice.clone()
 circuit.append_qubit(2)
 
 # |circuit> = (|alice>|00> + |alice>|11>) / sqrt(2)
+circuit.h(1).cx(1, 2)
 
 # --*--H-----*--
 # --|-----*--|--
