@@ -41,6 +41,9 @@ class Qubit(SymPyGateOperation, IQubitOperation):
     def _del_idx(self, i):
         self.data.row_del(i)
 
+    def fidelity(self, other):
+        return sympy.simplify(IQubitOperation.fidelity(self, other))
+
     def __init__(self, n_bits, arr=None, measured=None, rng=None):
         self.measured = measured
         if arr is None:
