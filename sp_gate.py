@@ -45,6 +45,7 @@ class Qubit(SymPyGateOperation, IQubitOperation):
         return sympy.simplify(IQubitOperation.fidelity(self, other))
 
     def __init__(self, n_bits, arr=None, measured=None, rng=None):
+        self.formal_repr = False
         self.measured = measured
         if arr is None:
             data = self._generate_data(n_bits)
@@ -57,6 +58,8 @@ class Qubit(SymPyGateOperation, IQubitOperation):
         IQubitOperation.__init__(self, measured, rng)
 
     def __repr__(self):
+        if not self.formal_repr:
+            return str(self)
         return 'Qubit(' + str(self.n_bits) + ', arr=\n' + str(self.data) + ', measured=' + bin(self.measured) + ')'
 
     def __str__(self):
@@ -68,7 +71,7 @@ class Qubit(SymPyGateOperation, IQubitOperation):
             return fmt.format(self.data[i], i)
 
         fmtc = '{:0%db}' % self.n_bits
-        return ' + '.join(qubit_format(i) for i in range(2**self.n_bits) if abs(self.data[i]) > 0.00001) + ' Measured: ' + fmtc.format(self.measured)
+        return ' + '.join(qubit_format(i) for i in range(2**self.n_bits) if self.data[i] != 0) + ' Measured: ' + fmtc.format(self.measured)
 
 
 class Unitary(SymPyGateOperation):

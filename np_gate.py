@@ -34,6 +34,7 @@ class Qubit(NumPyGateOperation, IQubitOperation):
         self.data = np.delete(self.data, i, 0)
 
     def __init__(self, n_bits, arr=None, measured=None, rng=None):
+        self.formal_repr = False
         if arr is None:
             data = self._generate_data(n_bits)
         else:
@@ -45,6 +46,8 @@ class Qubit(NumPyGateOperation, IQubitOperation):
         IQubitOperation.__init__(self, measured, rng)
 
     def __repr__(self):
+        if not self.formal_repr:
+            return str(self)
         return 'Qubit(' + str(self.n_bits) + ', arr=\n' + str(self.data) + ', measured=' + bin(self.measured) + ')'
 
     def __str__(self):

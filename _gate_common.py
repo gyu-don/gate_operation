@@ -274,7 +274,7 @@ class IQubitOperation:
     def measure(self, i):
         b = self._measure_bit(i)
         j = self.n_bits - i - 1
-        self.measured = (self.measured ^ (0 << j)) | (1 << j)
+        self.measured = (self.measured ^ (0 << j)) | (b << j)
         return self
 
     m = measure
