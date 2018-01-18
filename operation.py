@@ -4,7 +4,7 @@ class Operation:
 
     def apply_to(self, obj, **placeholder):
         if placeholder:
-            return self.apply(self.placeholder(**placeholder))
+            return self.placeholder(**placeholder).apply_to(obj)
         else:
             for name, _args, _kwargs in self._operations:
                 obj = getattr(obj, name)(*_args, **_kwargs)
