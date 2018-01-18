@@ -2,7 +2,7 @@ class Operation:
     def __init__(self):
         self._operations = []
 
-    def apply(self, obj, **placeholder):
+    def apply_to(self, obj, **placeholder):
         if placeholder:
             return self.apply(self.placeholder(**placeholder))
         else:
