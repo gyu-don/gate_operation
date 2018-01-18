@@ -309,6 +309,11 @@ class IQubitOperation:
         self.n_bits -= 1
         return self
 
+    def reset(self, i):
+        if self._measure_bit(i):
+            self.x(i)
+        return self
+
     def fidelity(self, other):
         v = self._innerproduct(self.data, other.data)
         return abs(v)
