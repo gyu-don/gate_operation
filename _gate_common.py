@@ -175,6 +175,9 @@ class IGateOperation:
             mat = kron(mat, identity(2**j))
         return mat
 
+    def apply(self, operation):
+        return operation.apply(self)
+
     def apply_gate(self, gate, i):
         self.data = self._matmul(self._make_single_gate_mat(gate, i), self.data)
         return self
