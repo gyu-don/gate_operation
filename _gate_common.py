@@ -76,6 +76,15 @@ class IGateOperation:
     def z(self, i):
         return self.apply_gate(self._gate.z, i)
 
+    def rx(self, i, theta):
+        return self.apply_gate(self._gate.rx(theta), i)
+
+    def ry(self, i, theta):
+        return self.apply_gate(self._gate.ry(theta), i)
+
+    def rz(self, i, theta):
+        return self.apply_gate(self._gate.rz(theta), i)
+
     def s(self, i):
         return self.apply_gate(self._gate.s, i)
 
@@ -319,7 +328,7 @@ class IQubitOperation:
         return abs(v)
 
 
-def build_gate_class(name, f_matrix, sqrt2_inv, make_complex):
+def build_gate_class(name, f_matrix, sqrt2_inv, make_complex, sin, cos, exp):
     d = {}
     d['__sqrt2_inv'] = sqrt2_inv
     d['h'] = f_matrix([[sqrt2_inv, sqrt2_inv], [sqrt2_inv, -sqrt2_inv]])
@@ -331,6 +340,16 @@ def build_gate_class(name, f_matrix, sqrt2_inv, make_complex):
     d['t'] = f_matrix([[1, 0], [0, make_complex(sqrt2_inv, sqrt2_inv)]])
     d['s_dag'] = f_matrix([[1, 0], [0, make_complex(0, -1)]])
     d['t_dag'] = f_matrix([[1, 0], [0, make_complex(sqrt2_inv, -sqrt2_inv)]])
+    # Rotations
+    d['rx'] = lambda theta: f_matrix(
+            [[cos(theta / 2), make_complex(0, -sin(theta / 2))],
+             [make_complex(0, -sin(theta / 2)), cos(theta / 2)]])
+    d['ry'] = lambda theta: f_matrix(
+            [[cos(theta / 2), -sin(theta / 2)],
+             [sin(theta / 2), cos(theta / 2)]])
+    d['rz'] = lambda theta: f_matrix(
+            [[exp(make_complex(0, -theta / 2)), 0],
+             [0, exp(make_complex(0, -theta / 2))]])
     # _zero and _one are not unitary but _zero + _one is identity. It is used for Control-U gate.
     d['_zero'] = f_matrix([[1, 0], [0, 0]])
     d['_one'] = f_matrix([[0, 0], [0, 1]])
