@@ -9,7 +9,10 @@ class SymPyGateOperation(IGateOperation):
             'SymPyGate',
             sympy.Matrix,
             sympy.sqrt(2) / 2,
-            lambda a, b: a + b * sympy.I
+            lambda a, b: a + b * sympy.I,
+            sympy.sin,
+            sympy.cos,
+            sympy.exp
     )
     _identity = staticmethod(sympy.eye)
     _kron = staticmethod(TensorProduct)
@@ -21,6 +24,10 @@ class SymPyGateOperation(IGateOperation):
 
     def __init__(self, n_bits, data):
         IGateOperation.__init__(self, n_bits, data)
+
+    def simplify(self):
+        self.data = sympy.simplify(self.data)
+        return self
 
 
 class Qubit(SymPyGateOperation, IQubitOperation):

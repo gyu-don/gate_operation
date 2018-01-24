@@ -4,7 +4,7 @@ import numpy as np
 from _gate_common import *
 
 class NumPyGateOperation(IGateOperation):
-    _gate = build_gate_class('NumPyGate', np.array, math.sqrt(2.0) / 2.0, complex)
+    _gate = build_gate_class('NumPyGate', np.array, math.sqrt(2.0) / 2.0, complex, np.sin, np.cos, np.exp)
     _identity = staticmethod(np.identity)
     _kron = staticmethod(np.kron)
     _matmul = staticmethod(np.dot)
