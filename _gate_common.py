@@ -14,6 +14,32 @@ class FakeRandom:
         except StopIteration:
             raise ValueError('Given random sequence is over.')
 
+def single_bit(f):
+    def g(self, *args):
+        if not args:
+            raise TypeError(f.__name__ + '() takes at least one argument (0 given)')
+        last_i = -1
+        last_ellipsis = False
+        for i in args:
+            if i is Ellipsis:
+                if last_ellipsis:
+                    raise ValueError('Consecutive Ellipsis is not allowed.')
+                last_ellipsis = True
+            else:
+                if last_ellipsis:
+                    if i <= last_i:
+                        raise ValueError('i < j is required when arguments contain i, ..., j')
+                    for j in range(last_i + 1, i):
+                        f(self, j)
+                    last_ellipsis = False
+                f(self, i)
+                last_i = i
+        if last_ellipsis:
+            for j in range(last_i + 1, self.n_bits):
+                f(self, j)
+        return self
+    return g
+
 class IGateOperation:
     # Shall be set by subclass.
     _gate = None
@@ -64,15 +90,19 @@ class IGateOperation:
     def i(self, i):
         return self
 
+    @single_bit
     def h(self, i):
         return self.apply_gate(self._gate.h, i)
 
+    @single_bit
     def x(self, i):
         return self.apply_gate(self._gate.x, i)
 
+    @single_bit
     def y(self, i):
         return self.apply_gate(self._gate.y, i)
 
+    @single_bit
     def z(self, i):
         return self.apply_gate(self._gate.z, i)
 
@@ -85,15 +115,19 @@ class IGateOperation:
     def rz(self, i, theta):
         return self.apply_gate(self._gate.rz(theta), i)
 
+    @single_bit
     def s(self, i):
         return self.apply_gate(self._gate.s, i)
 
+    @single_bit
     def t(self, i):
         return self.apply_gate(self._gate.t, i)
 
+    @single_bit
     def s_dag(self, i):
         return self.apply_gate(self._gate.s_dag, i)
 
+    @single_bit
     def t_dag(self, i):
         return self.apply_gate(self._gate.t_dag, i)
 
@@ -307,6 +341,7 @@ class IQubitOperation:
                 d[j] = 0
             return 1
 
+    @single_bit
     def measure(self, i):
         b = self._measure_bit(i)
         j = self.n_bits - i - 1
@@ -340,6 +375,12 @@ class IQubitOperation:
         for j in indices:
             del_idx(j)
         self.n_bits -= 1
+        return self
+
+    @single_bit
+    def reset(self, i):
+        if self._measure_bit(i):
+            self.x(i)
         return self
 
     def fidelity(self, other):

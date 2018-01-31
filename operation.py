@@ -10,6 +10,18 @@ class Operation:
                 obj = getattr(obj, name)(*_args, **_kwargs)
             return obj
 
+    def get_count(self, qubit, count=1024, **placeholder):
+        if placeholder:
+            return self.placeholder(**placeholder).get_count(qubit)
+        else:
+            c = {}
+            n_bits = qubit.n_bits
+            for _ in range(count):
+                m = self.apply_to(qubit.clone()).measured
+                c[m] = c.get(m, 0) + 1
+            _bin = lambda n: ('0' * n_bits + bin(n)[2:])[-n_bits:]
+            return {_bin(k): v for k, v in c.items()}
+
     def placeholder(self, **placeholder):
         op = Operation()
         for name, _args, _kwargs in self._operations:
