@@ -385,7 +385,7 @@ def build_gate_class(name, f_matrix, sqrt2_inv, make_complex, sin, cos, exp):
              [sin(theta / 2), cos(theta / 2)]])
     d['rz'] = lambda theta: f_matrix(
             [[exp(make_complex(0, -theta / 2)), 0],
-             [0, exp(make_complex(0, -theta / 2))]])
+             [0, exp(make_complex(0, theta / 2))]])
     # _zero and _one are not unitary but _zero + _one is identity. It is used for Control-U gate.
     d['_zero'] = f_matrix([[1, 0], [0, 0]])
     d['_one'] = f_matrix([[0, 0], [0, 1]])
