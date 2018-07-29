@@ -353,6 +353,20 @@ class IQubitOperation:
         self.n_bits -= 1
         return self
 
+    def ignore_global(self):
+        d = self.data
+        for i in range(2**self.n_bits - 1):
+            abssq = self._abssq(d[i])
+            if abssq < 0.00001:
+                continue
+            absval = self._sqrt(abssq)
+            angle = absval / d[i]
+            d[i] = absval
+            for j in range(i + 1, 2**self.n_bits):
+                d[j] *= angle
+            break
+        return self
+
     @single_bit
     def reset(self, i):
         if self._measure_bit(i):
